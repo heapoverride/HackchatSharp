@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -22,11 +22,13 @@ namespace HackchatSharp
     public class Client
     {
         private WebSocket ws = null;
-        private List<User> onlineUsers = new List<User>();
-        private string url = "wss://hack.chat/chat-ws";
         private string nick = null;
+        public string Nick { get { return this.nick; } }
         private string channel = null;
+        public string Channel { get { return this.channel; } }
 
+        private List<User> onlineUsers = new List<User>();
+        public User[] OnlineUsers { get { return this.onlineUsers.ToArray(); } }
         private string prefix = "/";
         public string Prefix { get { return this.prefix; } set { this.prefix = value; } }
         private Dictionary<string, Action<Message, string[], string[]>> commands = new Dictionary<string, Action<Message, string[], string[]>>();
@@ -40,16 +42,17 @@ namespace HackchatSharp
         public Action<User> OnOnlineRemove = null;
         public Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> ServerCertificateValidationCallback = null;
 
-        public Client(string url = null)
+        public Client(string url = "wss://hack.chat/chat-ws")
         {
-            this.ws = new WebSocket(url == null ? this.url : url);
+            Uri uri = new Uri(url);
+            this.ws = new WebSocket(uri.ToString());
 
             this.ws.OnOpen += this.ws_OnOpen;
             this.ws.OnClose += this.ws_OnClose;
             this.ws.OnMessage += this.ws_OnMessage;
             this.ws.OnError += this.ws_OnError;
 
-            ClientSslConfiguration sslconf = new ClientSslConfiguration("hack.chat");
+            ClientSslConfiguration sslconf = new ClientSslConfiguration(uri.Host);
             sslconf.EnabledSslProtocols = SslProtocols.Tls12;
             sslconf.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => {
                 if (this.ServerCertificateValidationCallback != null)
