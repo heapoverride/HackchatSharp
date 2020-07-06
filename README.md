@@ -7,6 +7,7 @@ HackchatSharp is a C# library for hack.chat.
 
 #### Example
 ```csharp
+/* using HackchatSharp; */
 Client client = new Client();
 
 /* basic callbacks */
