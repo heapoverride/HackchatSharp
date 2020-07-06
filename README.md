@@ -1,6 +1,11 @@
 # HackchatSharp
 HackchatSharp is a C# library for hack.chat.
 
+#### Required packages
+- WebSocketSharp
+- Newtonsoft.Json
+
+#### Example
 ```csharp
 Client client = new Client();
 
