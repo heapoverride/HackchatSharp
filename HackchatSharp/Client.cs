@@ -126,7 +126,7 @@ namespace HackchatSharp
                 {
                     Time = (long)data["time"],
                     Nick = (string)data["nick"],
-                    Trip = data.ContainsKey("trip") && (string)data["trip"] != null ? (string)data["trip"] : null,
+                    Trip = data.ContainsKey("trip") && (string)data["trip"] != null && ((string)data["trip"]).Length > 0 ? (string)data["trip"] : null,
                     Text = (string)data["text"],
                     Type = MessageTypes.Chat,
                 };
@@ -281,7 +281,7 @@ namespace HackchatSharp
     public class Message
     {
         public string Nick = "";
-        public string Trip = "";
+        public string Trip = null;
         public string Text = "";
         public UserRoles Role = UserRoles.User;
         public MessageTypes Type = MessageTypes.Chat;
