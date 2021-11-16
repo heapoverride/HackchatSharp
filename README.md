@@ -7,39 +7,96 @@ HackchatSharp is a C# library for hack.chat.
 
 #### Example
 ```csharp
-/* using HackchatSharp; */
-Client client = new Client();
+using System;
+using System.Linq;
+using HackchatSharp;
 
-/* basic callbacks */
-client.OnOnlineAdd = user => { Console.WriteLine("User '" + user.Nick + "' joined"); };
-client.OnOnlineRemove = user => { Console.WriteLine("User '" + user.Nick + "' left"); };
-client.OnOnlineSet = users => { Console.WriteLine(users.Length.ToString() + " users online"); };
-client.OnDisconnect = () => { Console.WriteLine("Disconnected from hack.chat"); };
-        
-client.OnConnect = () => {
-    Console.WriteLine("Connected to hack.chat");
-
-    // we send join once 
-    // we are connected to server
-    client.Join("SharpBot", "NoStealingMyPassword", "programming");
-};
-
-client.OnMessage = msg => {
-    Console.WriteLine(msg.Nick + (msg.Trip != null ? "#" + msg.Trip : "") + " [" + msg.Role.ToString() + "]: " + msg.Text);
-
-    if (msg.Text == "ping")
-    {
-        client.Say("pong");
-    }
-};
-
-/* add some nice commands */
-client.Prefix = "--";
-
-client.Commands.Add("test", (Message message, string[] pars, string[] arr) =>
+class Program
 {
-    client.Say("@" + message.Nick + ", " + String.Join(", ", pars));
-});
+    static void Main(string[] _args)
+    {
+        var client = new HackClient();
 
-Console.ReadLine();
+        client.Prefix = "-";
+
+        client.OnConnect += OnConnect;
+        client.OnDisconnect += OnDisconnect;
+        client.OnMessage += OnMessage;
+        client.OnOnlineSet += OnOnlineSet;
+        client.OnOnlineAdd += OnOnlineAdd;
+        client.OnOnlineRemove += OnOnlineRemove;
+
+        /**
+         * Define a new command
+         */
+        client.Commands["ping"] = args =>
+        {
+            /**
+             * args.Client
+             * args.User
+             * args.Message
+             * args.Args
+             * args.Parsed
+             */
+
+            args.User.Say("pong!");
+        };
+
+        client.Connect();
+    }
+
+    static void OnConnect(object sender, HackClient.HCConnectEventArgs e)
+    {
+        Console.WriteLine("Connected!");
+
+        /**
+         * Try to join a channel when connected
+         * to WebSocket server
+         */
+        e.Client.Join("SharpBot", "NoStealingMyPassword", "programming");
+    }
+
+    static void OnDisconnect(object sender, HackClient.HCDisconnectEventArgs e)
+    {
+        Console.WriteLine("Disconnected!");
+    }
+
+    static void OnMessage(object sender, HackClient.HCMessageEventArgs e)
+    {
+        string text = $"{e.User}: {e.Message.Text}";
+
+        if (e.User.Nick == null)
+            text = $"{e.Message.Text}";
+
+        Console.WriteLine(text);
+
+        if (e.Message.Type == MessageTypes.Chat)
+        {
+            // ...
+        }
+        else if (e.Message.Type == MessageTypes.Info)
+        {
+            // ...
+        }
+        else if (e.Message.Type == MessageTypes.Warn)
+        {
+            // ...
+        }
+    }
+
+    static void OnOnlineSet(object sender, HackClient.HCOnlineSetEventArgs e)
+    {
+        Console.WriteLine($"Users online: {String.Join(", ", e.Users.Select(user => user.ToString()))}");
+    }
+
+    static void OnOnlineAdd(object sender, HackClient.HCOnlineAddEventArgs e)
+    {
+        Console.WriteLine($"{e.User} joined");
+    }
+
+    static void OnOnlineRemove(object sender, HackClient.HCOnlineRemoveEventArgs e)
+    {
+        Console.WriteLine($"{e.User} left");
+    }
+}
 ```
